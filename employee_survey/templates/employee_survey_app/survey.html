@@ -1,0 +1,93 @@
+{% extends 'employee_survey_app/base.html' %}
+{% load survey_extras %}
+
+{% block body_block %}
+<div class="container">
+	<h2 style="color:#000080">{{user}} welcome back! </h2>
+	<h4>About {{survey.name|title}} </h4>
+	<div class="survey-description">
+		{{survey.description|safe}}
+	</div>
+
+	<div class="card">
+		<div class="card-header"></div>
+		<div class="card-body">
+			<form action="/employee_survey_app/my_surveys/{{survey.id}}/" method="POST">{% csrf_token %}
+				<div class="category-container">
+					<h3 class="collapsible" id="response_metadata">Response Metadata<span></span></h3>
+					<div class="field-wrapper question-required readonly">
+						{{ response_form.interviewer.errors }}
+						<span class="asterix"> * </span>{{ response_form.user.label_tag }}
+						<span class="form-help-text">{{ response_form.user.help_text}}</span>
+						<div class="form-field-body">
+							{{ response_form.user }}
+						</div>
+					</div>
+					<div class="field-wrapper">
+						{{ response_form.conditions.errors }}
+						{{ response_form.conditions.label_tag }}
+						<span class="form-help-text">{{ response_form.conditions.help_text}}</span>
+						<div class="form-field-body">
+							{{ response_form.conditions }}
+						</div>
+					</div>
+
+					<div class="field-wrapper">
+						{{ response_form.comments.errors }}
+						{{ response_form.comments.label_tag }}
+						<span class="form-help-text">{{ response_form.comments.help_text}}</span>
+						<div class="form-field-body">
+							{{ response_form.comments }}
+						</div>
+					</div>
+				</div>
+
+				<ol class="survey-questions">
+				{% for category in categories %}
+					<h3 class="collapsible">{{category|title}} Questions<span></span></h3>
+					<div class="category-container">
+					{% for field in response_form %}
+						{% if field.field.widget.attrs.category == category %}
+							<li class="q-item" value="{% counter %}">
+								{% if field.field.required %}
+								<div class="field-wrapper question-required">
+									{{ field.errors }}
+									<span class="asterix"> * </span><label class="label-inline">{{ field.label }}</label>
+								</div>
+								{% else %}
+								<div class="field-wrapper">
+									{{ field.errors }}
+									<label class="label-inline">{{ field.label }}</label>
+								{% endif %}
+									<span class="form-help-text">{{ field.help_text}}</span>
+									<div class="form-field-body">
+										{{ field }}
+									</div>
+								</div>
+							</li>
+						{% endif %}
+					{% endfor %}
+					</div>
+				{% endfor %}
+				</ol>
+
+				<div class="submit-button">
+					<input type="submit" class="btn btn-success btn-md" name="save_btn" value="Save">
+					<input type="submit" class="btn btn-success btn-md" name="finish_btn" value="Finish">
+				</div>
+			</form>
+		</div>
+	</div>
+
+	{% endblock %}
+
+	{% block extra_js %}
+		<script src="/media/js/jquery.collapsible.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				//collapsible management
+				$('.collapsible').collapsible({defaultOpen: 'response_metadata'});
+			});
+		</script>
+	{% endblock %}
+</div>

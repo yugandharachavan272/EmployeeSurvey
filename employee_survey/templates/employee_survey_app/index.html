@@ -1,0 +1,15 @@
+{% extends "employee_survey_app/base.html" %}
+{% block body_block %}
+<div class="container">
+  <div class="jumbotron">
+    <h2>Welcome to the Employee Survey System !</h2>
+    {% if user.is_authenticated %}
+        <h4 style="color:blue">Hello {{ user.username }}</h4>
+        <li><a href="{% url 'employee_survey_app:my_surveys' %}" style="color:#cc0052">Take Your Surveys</a></li>
+
+    {% else %}
+        <h2>Register or Login if you'd like to</h2>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

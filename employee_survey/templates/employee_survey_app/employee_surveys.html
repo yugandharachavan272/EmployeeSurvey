@@ -1,0 +1,17 @@
+{% extends "employee_survey_app/base.html" %}
+{% block body_block %}
+<h2 style="color:#000080">Welcome to Employee Survey System!</h2>
+{% if UsersSurveys %}
+    <ol>
+      {% for survey in UsersSurveys %}
+      <h4>
+          <li>
+            <a href="{{survey.survey_id}}">{{survey.survey.name}}</a>
+          </li>
+      </h4>
+      {% endfor %}
+    </ol>
+{% else %}
+      <p style="color:#ff0000">There are no surveys.</p>
+{% endif %}
+{% endblock %}

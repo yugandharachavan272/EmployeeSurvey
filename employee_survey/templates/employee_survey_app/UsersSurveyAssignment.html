@@ -1,0 +1,18 @@
+{% extends "employee_survey_app/base.html" %}
+{% block body_block %}
+<div class="container">
+  <div class="jumbotron">
+    <h2>Welcome to the Employee Survey System !</h2>
+    {% if user.is_superuser %}
+        <h2>Assign Survey to Users</h2>
+        <form enctype="multipart/form-data" method="POST">
+          {% csrf_token %}
+          {{ user_survey_form.as_p }}
+          <input type="submit" name="" value="Assign">
+        </form>
+    {% else %}
+        <h2>You are not authorised person for assignment</h2>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'employee_survey_app/base.html' %}
+{% block body_block %}
+<div class="container">
+    <div class="jumbotron">
+        <div class="row">
+            <div class="col-md-offset-3 col-md-3">
+                <form method="post" action="{% url 'employee_survey_app:user_login' %}">
+                    {% csrf_token %}
+                    {# A more "HTML" way of creating the login form#}
+                    <div class="form-login">
+                <h4>Welcome to Login </h4>
+                <input type="text" id="username" class="form-control input-sm chat-input" name="username"
+                       placeholder="username" />
+                </br>
+                <input type="password" id="password" class="form-control input-sm chat-input"  name="password"
+                       placeholder="password" />
+                </br>
+                <div class="wrapper">
+                <span class="group-btn">
+                    <input type="submit" class="btn btn-primary btn-md" name="" value="Login">
+                </span>
+                </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
