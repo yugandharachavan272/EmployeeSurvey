@@ -27,7 +27,7 @@ SECRET_KEY = 'e&qb21u25k%we1gz2y7_j3#w5n=x417fxe1brqcrumou_q!pn4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['3.17.152.102']
+ALLOWED_HOSTS = ['18.222.137.40']
 
 
 # Application definition
@@ -135,7 +135,7 @@ MEDIA_URL = '/media/'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'yugandharachavan272@gmail.com'
-EMAIL_HOST_PASSWORD = 'yugandhara@272'
+EMAIL_HOST_PASSWORD = '272@yugandhara'
 EMAIL_PORT = 587
 
 
