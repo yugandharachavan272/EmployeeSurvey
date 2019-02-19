@@ -19,7 +19,7 @@ class UserForm(forms.ModelForm):
 class UserProfileInfoForm(forms.ModelForm):
     class Meta():
         model = UserProfileInfo
-        fields = ('organisation', 'portfolio_site', 'profile_pic')
+        fields = ('organisation',)  # , 'portfolio_site', 'profile_pic'
 
 
 class UserSurveyAssignmentForm(forms.ModelForm):
