@@ -8,6 +8,7 @@ from django.views.generic import View, TemplateView, ListView, DetailView
 from employee_survey_app import models
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail, EmailMessage
+from employee_survey_app import EmailModel
 from .errors import *
 # import settings
 
@@ -73,8 +74,12 @@ def user_survey_assignment(request):
                 print("user ", user.username, "survey ", survey.name, "Email", user.email)
                 # send_mail('subject', 'Employee Survey', 'sender@example.com',
                 #          ['receiver1@example.com', 'receiver2@example.com'])
-                email = EmailMessage('Employee Survey', "You have assigned new survey", survey.name, to=[user.email])
-                email.send()
+                # email = EmailMessage('Employee Survey', "You have assigned new survey", survey.name, to=[user.email])
+                # email.send()
+                subject = "Assignment of Survey"
+                sms_text = "You have assigned new survey", survey.name
+                email_to = [user.email]
+                EmailModel.send_mail_fun(subject, sms_text, email_to)
             except Exception as e:
                 print("Exception in email", e)
 
@@ -136,10 +141,16 @@ def survey_detail(request, id ):
                                 is_finished=is_finished,
                                 user_Response_id=response_id)
 
-        print("i m in form submit")
+        # print("i m in form submit")
         if form.is_valid():
             response = form.save()
-            print(" i m in form save")
+            if is_finished:
+                # print("user ", user.username, "survey ", survey.name, "Email", user.email)
+                subject = "Complete Survey : ", survey.name
+                sms_text = "Hello ", user.username, ", \n Thank you for completing survey ", survey.name, "."
+                email_to = [user.email]
+                EmailModel.send_mail_fun(subject, sms_text, email_to)
+
             return HttpResponseRedirect("/employee_survey_app/confirm/%s" % response.interview_uuid)
     else:
         # print("i m in else")

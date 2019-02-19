@@ -3,7 +3,11 @@
 
 {% block body_block %}
 <div class="container">
-	<h2 style="color:#000080">{{user}} welcome back! </h2>
+	{% if user_Response_id %}
+		<h2 style="color:#000080">welcome {{user}}, now re-start your feedback ... </h2>
+	{% else %}
+		<h2 style="color:#000080">welcome {{user}}, now start your feedback ...</h2>
+	{% endif %}
 	<h4>About {{survey.name|title}} </h4>
 	<div class="survey-description">
 		{{survey.description|safe}}

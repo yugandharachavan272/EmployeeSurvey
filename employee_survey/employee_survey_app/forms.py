@@ -47,7 +47,7 @@ class ResponseForm(models.ModelForm):
         is_finished = kwargs.pop('is_finished')
         user_Response_id = kwargs.pop('user_Response_id')
         #  print(" user_Response_id ", user_Response_id)
-
+        self.user_Response_id = user_Response_id
         self.is_finished = is_finished
         self.user = user
         self.survey = survey
@@ -55,13 +55,12 @@ class ResponseForm(models.ModelForm):
         self.uuid = random_uuid = uuid.uuid4().hex
 
         if user_Response_id:
-            print(" i m in if ")
             survey_response = Response.objects.get(id=user_Response_id)
             self.uuid = survey_response.interview_uuid
             self.created = survey_response.created
             self.updated = survey_response.updated
             # self.comments = survey_response.comments
-            print(" self.uuid ", self.created, self.updated)
+            # print(" self.uuid ", self.created, self.updated)
 
         # add a field for each survey question, corresponding to the question
         # type as appropriate.

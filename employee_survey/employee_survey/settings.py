@@ -27,7 +27,7 @@ SECRET_KEY = 'e&qb21u25k%we1gz2y7_j3#w5n=x417fxe1brqcrumou_q!pn4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['18.222.137.40']
+ALLOWED_HOSTS = ['18.222.137.40']  # ['127.0.0.1']
 
 
 # Application definition
@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'EmployeeSurveyApplication',
         'USER': 'postgres',
-        'PASSWORD': 'root',
+        'PASSWORD': 'Test_1234',  # root
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -133,10 +133,9 @@ MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = '/media/'
 
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'yugandharachavan272@gmail.com'
-EMAIL_HOST_PASSWORD = '272@yugandhara'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = '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'
 EMAIL_PORT = 587
-
 
 LOGIN_URL = '/employee_survey_app/user_login/'

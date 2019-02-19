@@ -39,8 +39,12 @@ class Survey(models.Model):
 
 
 class UsersSurveys(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    user = models.ManyToManyField(User)
+    # survey = models.ManyToManyField(Survey)
+
+    def __str__(self):
+        return self.survey.name
 
 
 class Category(models.Model):
@@ -48,6 +52,9 @@ class Category(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
 
     def __unicode__(self):
+        return self.name
+
+    def __str__(self):
         return self.name
 
 
@@ -84,9 +91,10 @@ class Question(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     question_type = models.CharField(max_length=200, choices=QUESTION_TYPES, default=TEXT)
     # the choices field is only used if the question type
-    choices = models.TextField(blank=True, null=True,help_text='if the question type is "radio," '
-                                                               '"select," or "select multiple" provide '
-                                                               'a comma-separated list of options for this question .')
+    choices = models.TextField(blank=True, null=True, help_text='if the question type is "radio," "select,'
+                                                                '" or "select multiple" '
+                                                                'provide a comma-separated list of options'
+                                                                ' for this question .')
 
     def save(self, *args, **kwargs):
         if (self.question_type == Question.RADIO or self.question_type == Question.SELECT or self.question_type ==
@@ -106,6 +114,9 @@ class Question(models.Model):
         return choices_tuple
 
     def __unicode__(self):
+        return self.text
+
+    def __str__(self):
         return self.text
 
 
