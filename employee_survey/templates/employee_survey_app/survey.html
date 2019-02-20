@@ -18,14 +18,8 @@
 		<div class="card-body">
 			<form action="/employee_survey_app/my_surveys/{{survey.id}}/" method="POST">{% csrf_token %}
 				<div class="category-container">
-					<h3 class="collapsible" id="response_metadata">Response Metadata<span></span></h3>
-					<div class="field-wrapper question-required readonly" style="visibility:hidden">
-						{{ response_form.interviewer.errors }}
-						<span class="asterix"> * </span>{{ response_form.user.label_tag }}
-						<span class="form-help-text">{{ response_form.user.help_text}}</span>
-						<div class="form-field-body">
+					<div  style="visibility:hidden">
 							{{ response_form.user }}
-						</div>
 					</div>
 					<div class="field-wrapper">
 						{{ response_form.conditions.errors }}
