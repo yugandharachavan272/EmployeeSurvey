@@ -56,6 +56,13 @@ class ResponseAdmin(admin.ModelAdmin):
 
 
 class UsersSurveysAdmin(admin.ModelAdmin):
+    # FILTER USER AND SHOW EMPLOYES OF HIS ORGANISATION
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        user_profile = UserProfileInfo.objects.filter(user_id=request.user.id)
+        if db_field.name == "user":
+            kwargs["queryset"] = User.objects.filter(userprofileinfo__organisation_id=user_profile[0].organisation_id)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
     def save_model(self, request, obj, form, change):
         # print(" i m in save..")
         survey = form.cleaned_data['survey']
