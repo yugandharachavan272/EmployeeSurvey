@@ -1,0 +1,59 @@
+{% extends "employee_survey_app/base.html" %}
+{% block body_block %}
+<div class="container">
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        th{
+            color: blue;
+        }
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+    </style>
+  <div class="jumbotron">
+    <h2>REPORTS !</h2>
+      {% if response %}
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Created Date</th>
+            <th>Last Updated Date</th>
+            <th>Survey Name</th>
+            <th>User Name</th>
+            <th>Comments from User</th>
+            <th>Status</th>
+        </tr>
+        {% for item in response %}
+        <tr>
+             <td>{{ item.id }}</td>
+             <td>{{ item.created }}</td>
+             <td>{{ item.updated }}</td>
+             <td>{{ item.survey.name }}</td>
+             <td>{{ item.user.username }}</td>
+             <td>{{ item.comments }}</td>
+             <td>
+            {% if item.is_finished %}
+                 <label style="color:green">Complete</label>
+            {% else %}
+                 <label style="color:red">In-Complete</label>
+            {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+      {% else %}
+          <p style="color:#ff0000">There are no response.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

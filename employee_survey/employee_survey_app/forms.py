@@ -1,10 +1,14 @@
 from django import forms
 from django.forms import models
-from .models import UserProfileInfo, Question, Category, Survey, Response, AnswerText, AnswerRadio, AnswerSelect, \
-    AnswerInteger, AnswerSelectMultiple, UsersSurveys, AnswerBase
-from django.contrib.auth.models import User
+from .models import Question, Category, Survey, Response, AnswerText, AnswerRadio, AnswerSelect, \
+    AnswerInteger, AnswerSelectMultiple, SurveyUser, AnswerBase
+# from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
+from django.contrib.auth import get_user_model
+User = get_user_model()
 import uuid
+import csv
+import datetime
 from django.core.paginator import Paginator
 
 
@@ -13,18 +17,18 @@ class UserForm(forms.ModelForm):
 
     class Meta():
         model = User
-        fields = ('username', 'password', 'email')
-
-
-class UserProfileInfoForm(forms.ModelForm):
-    class Meta():
-        model = UserProfileInfo
-        fields = ('organisation',)  # , 'portfolio_site', 'profile_pic'
+        fields = ('username', 'password', 'email', 'organisation')
+        '''
+        class UserProfileInfoForm(forms.ModelForm):
+            class Meta():
+                model = UserProfileInfo
+                fields = ('organisation',)  # , 'portfolio_site', 'profile_pic'
+        '''
 
 
 class UserSurveyAssignmentForm(forms.ModelForm):
     class Meta():
-        model = UsersSurveys
+        model = SurveyUser
         fields = ('survey', 'user')
 
 
@@ -219,3 +223,5 @@ class ResponseForm(models.ModelForm):
                         print(" exception in save ", e)
                         a.save()
         return response
+
+

@@ -1,9 +1,11 @@
 from django.shortcuts import render
-from .forms import UserForm, UserProfileInfoForm, UserSurveyAssignmentForm
+from .forms import UserForm, UserSurveyAssignmentForm
+# from .models import UserProfileInfo
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import View, TemplateView, ListView, DetailView
 from employee_survey_app import models
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -15,6 +17,8 @@ from .errors import *
 from .models import Question, Survey, Category, Response, AnswerBase
 from django.contrib.auth.models import User
 from .forms import ResponseForm
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 def index(request):
@@ -32,30 +36,48 @@ def user_logout(request):
     return HttpResponseRedirect(reverse('index'))
 
 
+@login_required
+def survey_report(request):
+    if request.user.is_staff:
+        if request.user.is_superuser:
+            response = Response.objects.all()
+        elif request.user.groups.filter(name='SuperAdmin').exists():
+            response = Response.objects.all()
+        elif request.user.groups.filter(name='OrganisationAdmin').exists():
+            print(" i  m in org admin")
+            response = Response.objects.filter(user__organisation_id=request.user.organisation_id)
+        else:
+            response = Response.objects.filter(user_id=request.user.id)
+    else:
+        response = Response.objects.filter(user_id=request.user.id)
+    return render(request, 'employee_survey_app/survey_report.html', {'response': response})
+
+
 def register(request):
     registered = False
     if request.method == 'POST':
         user_form = UserForm(data=request.POST)
-        profile_form = UserProfileInfoForm(data=request.POST)
-        if user_form.is_valid() and profile_form.is_valid():
+        # profile_form = UserProfileInfoForm(data=request.POST)
+        if user_form.is_valid():
+            # and profile_form.is_valid():
             user = user_form.save()
             user.set_password(user.password)
             user.save()
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            if 'profile_pic' in request.FILES:
-                print('found it')
-                profile.profile_pic = request.FILES['profile_pic']
-            profile.save()
+            # profile = profile_form.save(commit=False)
+            # profile.user = user
+            # if 'profile_pic' in request.FILES:
+            #     print('found it')
+            #     profile.profile_pic = request.FILES['profile_pic']
+            # profile.save()
             registered = True
         else:
-            print(user_form.errors, profile_form.errors)
+            print(user_form.errors)
     else:
         user_form = UserForm()
-        profile_form = UserProfileInfoForm()
+        # profile_form = UserProfileInfoForm()
     return render(request, 'employee_survey_app/registration.html',
                   {'user_form': user_form,
-                           'profile_form': profile_form,
+                           # 'profile_form': profile_form,
                            'registered': registered})
 
 
@@ -180,10 +202,9 @@ def confirm(request, uuid):
 
 class EmployeeSurveys(LoginRequiredMixin, ListView):
     context_object_name = 'UsersSurveys'
-    model = models.UsersSurveys
+    model = models.SurveyUser
     template_name = 'employee_survey_app/employee_surveys.html'
     # paginate_by = 5
 
     def get_queryset(self):
-        return models.UsersSurveys.objects.filter(user=self.request.user)
-
+        return models.Survey.objects.filter(user=self.request.user)

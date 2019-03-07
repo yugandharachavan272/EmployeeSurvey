@@ -31,6 +31,9 @@
                   <li class="nav-item">
                       <a class="navbar-link" href="{% url 'employee_survey_app:register' %}" >Register</a>
                   </li>
+                  <li class="nav-item">
+                      <a class="navbar-link" href="{% url 'employee_survey_app:survey_report' %}">Report</a>
+                  </li>
                   {# Some logic on what to display for last item#}
                   {% if user.is_authenticated %}
                     <li class="nav-item">

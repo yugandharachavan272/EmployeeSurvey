@@ -8,6 +8,7 @@ app_name = 'employee_survey_app'
 urlpatterns = [
     url(r'^register/$', views.register, name='register'),
     url(r'user_survey_assignment/$', views.user_survey_assignment, name='user_survey_assignment'),
+    url(r'survey_report/$', views.survey_report, name='survey_report'),
     url(r'^user_login/$', views.user_login, name='user_login'),
     # url(r'^survey/(?P<id>\d+)/$', views.survey_detail, name='survey_detail'),
     url(r'^my_surveys/$', views.EmployeeSurveys.as_view(), name='my_surveys'),
