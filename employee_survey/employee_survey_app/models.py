@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import inspect, os
+from django.contrib.auth.models import AbstractUser
+import datetime
 # Create your models here.
 
 
@@ -11,6 +16,11 @@ class Organisation(models.Model):
         return self.name
 
 
+class User(AbstractUser):
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, blank=True, null=True, related_name='organisations')
+
+
+'''
 class UserProfileInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, related_name='organisations')
@@ -18,12 +28,34 @@ class UserProfileInfo(models.Model):
     profile_pic = models.ImageField(upload_to='profile_pics', blank=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.username'''
+
+'''
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    print(" i m in create user ")
+    if created:
+        try:
+            print(" instance in create ", instance)
+
+            for entry in reversed(inspect.stack()):
+                if os.path.dirname(__file__) + '/views.py' == entry[1]:
+                    try:
+                        user = entry[0].f_locals['request'].user
+                    except:
+                        user = None
+                    break
+            if user:
+                print(user)
+        except Exception as e:
+            print("e", e)
+'''
 
 
 class Survey(models.Model):
     name = models.CharField(max_length=400)
     description = models.TextField()
+    user = models.ManyToManyField(User, through='SurveyUser')
 
     def __unicode__(self):
             return self.name
@@ -38,9 +70,11 @@ class Survey(models.Model):
                 return None
 
 
-class UsersSurveys(models.Model):
+class SurveyUser(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
-    user = models.ManyToManyField(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_date = models.DateField(default=datetime.date.today)
+    end_date = models.DateField()
     # survey = models.ManyToManyField(Survey)
 
     def __str__(self):

@@ -207,4 +207,4 @@ class EmployeeSurveys(LoginRequiredMixin, ListView):
     # paginate_by = 5
 
     def get_queryset(self):
-        return models.Survey.objects.filter(user=self.request.user)
+        return models.SurveyUser.objects.filter(user=self.request.user)
