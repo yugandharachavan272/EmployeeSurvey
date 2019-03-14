@@ -13,7 +13,7 @@ Pillow==5.4.1
 psycopg2==2.7.7
 python-http-client==3.1.0
 pytz==2018.9
-PyYAML~>3.13
+PyYAML~>4.2b1
 sendgrid==5.6.0
 tablib==0.12.1
 unicodecsv==0.14.1
