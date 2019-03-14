@@ -3,7 +3,7 @@
 
 {% block body_block %}
 <div class="container">
-	{% if user_Response_id %}
+	{% if user_response_id %}
 		<h2 style="color:#000080">welcome {{user}}, now re-start your feedback ... </h2>
 	{% else %}
 		<h2 style="color:#000080">welcome {{user}}, now start your feedback ...</h2>
@@ -21,15 +21,6 @@
 					<div  style="visibility:hidden">
 							{{ response_form.user }}
 					</div>
-					<div class="field-wrapper">
-						{{ response_form.conditions.errors }}
-						{{ response_form.conditions.label_tag }}
-						<span class="form-help-text">{{ response_form.conditions.help_text}}</span>
-						<div class="form-field-body">
-							{{ response_form.conditions }}
-						</div>
-					</div>
-
 					<div class="field-wrapper">
 						{{ response_form.comments.errors }}
 						{{ response_form.comments.label_tag }}

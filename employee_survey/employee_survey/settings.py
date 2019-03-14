@@ -27,7 +27,7 @@ SECRET_KEY = 'e&qb21u25k%we1gz2y7_j3#w5n=x417fxe1brqcrumou_q!pn4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['18.222.137.40']  # ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', '18.222.137.40']  # ['18.222.137.40']
 
 
 # Application definition
@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'employee_survey_app'
+    'employee_survey_app',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'EmployeeSurveyApplication',
         'USER': 'postgres',
-        'PASSWORD': 'root',  # 'Test_1234'
+        'PASSWORD': 'Test_1234',  # 'root'
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -108,6 +109,34 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR+'\debug.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -128,6 +157,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [STATIC_DIR, ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'employee_survey/static')
 
 MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = '/media/'
@@ -139,3 +169,5 @@ EMAIL_HOST_PASSWORD = 'SG.1j6muUijSt-pXukzJxVLuQ.qUJHBnNt47HJ2BRxpl77O7agUTS1tFX
 EMAIL_PORT = 587
 
 LOGIN_URL = '/employee_survey_app/user_login/'
+
+AUTH_USER_MODEL = 'employee_survey_app.User'

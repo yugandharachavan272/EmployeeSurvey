@@ -25,3 +25,7 @@ urlpatterns = [
     url(r'^employee_survey_app/', include('employee_survey_app.urls')),
     url(r'^logout/$', views.user_logout, name='logout'),
 ]
+
+admin.site.site_header = "Survey Admin"
+admin.site.site_title = "Survey Admin Portal"
+admin.site.index_title = "Welcome to Employee Survey Portal"
