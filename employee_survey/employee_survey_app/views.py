@@ -108,8 +108,6 @@ def user_login(request):
 
 
 def survey_detail(request, id):
-    logger.info(" i m in survey detail")
-    logger.exception(" hi exception")
     survey = Survey.objects.get(id=id)
     category_items = Category.objects.filter(survey=survey)
     categories = [c.name for c in category_items]
