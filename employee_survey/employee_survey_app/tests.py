@@ -119,7 +119,7 @@ class EmployeeSurveyTest(TestCase):
     def test_logged_in_uses_correct_template(self):
         login = self.client.login(username='test_user', password='1X<ISRUkw+tuK')
         response = self.client.get(reverse('employee_survey_app:my_surveys'))
-
+        print(" response ", response)
         # Check our user is logged in
         self.assertEqual(str(response.context['user']), 'test_user')
         # Check that we got a response "success"
@@ -151,14 +151,13 @@ class EmployeeSurveyDetail(TestCase):
             self.survey = s
             if isinstance(c, Category):
                 self.category = c
-                q = Question.objects.create(text='test question', required=False, category=self.category,
-                                            survey=self.survey, question_type=1, choices='')
+                q = Question.objects.create(text='test question??', required=True, category=self.category,
+                                            survey=self.survey, question_type='text', choices='')
                 self.question = q
 
     # Valid Form Data
-    def test_ResponseForm_valid(self):
+    def test_ResponseForm(self):
         login = self.client.login(username='test_user', password='1X<ISRUkw+tuK')
-        response = self.client.get(reverse('employee_survey_app:my_surveys/'+str(self.survey.id)+''))
-        form = ResponseForm(survey=self.survey, user=response.context['user'], is_finished=False,
-                            user_response_id=0, initial={'user': response.context['user'], 'comments': ''})
-        self.assertTrue(form.is_valid())
+        response = self.client.get(reverse('employee_survey_app:my_surveys_detail',
+                                           kwargs={'id': self.survey.id}))
+        self.assertEqual(response.status_code, 200)
