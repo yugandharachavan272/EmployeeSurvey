@@ -159,10 +159,8 @@ class EmployeeSurveyDetail(TestCase):
             self.survey = s
             if isinstance(c, Category):
                 self.category = c
-                q = Question.objects.create(text='test question??',
-                                            required=True, category=self.category,
-                                            survey=self.survey, question_type='text',
-                                            choices='')
+                q = Question.objects.create(text='test question??', required=True, category=self.category,
+                                            survey=self.survey, question_type='text', choices='')
                 self.question = q
 
     # Valid Form Data
