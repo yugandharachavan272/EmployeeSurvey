@@ -1,3 +1,10 @@
+# pylint: disable=invalid-name
+# pylint: disable=broad-except
+# pylint: disable=missing-docstring
+# pylint: disable=no-member
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
 from django.contrib.auth.models import Permission, Group
@@ -8,7 +15,8 @@ from .models import User, Organisation, Category, Survey, Question
 # Create your tests here.
 class SetupClass(TestCase):
     def setUp(self):
-        self.user = User.objects.create(email="user@mp.com", password="user", first_name="user", username="test user")
+        self.user = User.objects.create(email="user@mp.com", password="user",
+                                        first_name="user", username="test user")
 
 
 # Test Cases for form
@@ -66,8 +74,10 @@ class SurveyReportTest(TestCase):
     def setUp(self):
         # Create two users
         test_organisation = Organisation.objects.create(name='test')
-        test_user1 = User.objects.create_user(username='test_user', password='1X<ISRUkw+tuK', is_superuser=False,
-                                              is_staff=True, organisation_id=test_organisation.id)
+        test_user1 = User.objects.create_user(username='test_user',
+                                              password='1X<ISRUkw+tuK', is_superuser=False,
+                                              is_staff=True,
+                                              organisation_id=test_organisation.id)
         test_user1.group = Group(name='OrganisationAdmin')
         test_user1.group.save()
         test_user1.save()
@@ -81,8 +91,6 @@ class SurveyReportTest(TestCase):
 
         login = self.client.login(username='test_user', password='1X<ISRUkw+tuK')
         response = self.client.get(reverse('employee_survey_app:survey_report'))
-        # self.assertRedirects(response, '/employee_survey_app/user_login/?next=/employee_survey_app/survey_report/')
-
         # Check our user is logged in
         self.assertEqual(str(response.context['user']), 'test_user')
 
@@ -119,7 +127,7 @@ class EmployeeSurveyTest(TestCase):
     def test_logged_in_uses_correct_template(self):
         login = self.client.login(username='test_user', password='1X<ISRUkw+tuK')
         response = self.client.get(reverse('employee_survey_app:my_surveys'))
-
+        print(" response ", response)
         # Check our user is logged in
         self.assertEqual(str(response.context['user']), 'test_user')
         # Check that we got a response "success"
@@ -151,14 +159,15 @@ class EmployeeSurveyDetail(TestCase):
             self.survey = s
             if isinstance(c, Category):
                 self.category = c
-                q = Question.objects.create(text='test question', required=False, category=self.category,
-                                            survey=self.survey, question_type=1, choices='')
+                q = Question.objects.create(text='test question??',
+                                            required=True, category=self.category,
+                                            survey=self.survey, question_type='text',
+                                            choices='')
                 self.question = q
 
     # Valid Form Data
-    def test_ResponseForm_valid(self):
+    def test_ResponseForm(self):
         login = self.client.login(username='test_user', password='1X<ISRUkw+tuK')
-        response = self.client.get(reverse('employee_survey_app:my_surveys/'+str(self.survey.id)+''))
-        form = ResponseForm(survey=self.survey, user=response.context['user'], is_finished=False,
-                            user_response_id=0, initial={'user': response.context['user'], 'comments': ''})
-        self.assertTrue(form.is_valid())
+        response = self.client.get(reverse('employee_survey_app:my_surveys_detail',
+                                           kwargs={'id': self.survey.id}))
+        self.assertEqual(response.status_code, 200)

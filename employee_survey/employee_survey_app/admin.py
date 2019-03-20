@@ -1,17 +1,24 @@
+# pylint: disable=invalid-name
+# pylint: disable=broad-except
+# pylint: disable=missing-docstring
+# pylint: disable=no-member
+"""
+Register created module here
+"""
 import logging
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin
 from django.db import IntegrityError
-from .models import User, Organisation, Question, Category, SurveyUser, Survey, Response, AnswerText, AnswerRadio, \
-    AnswerSelect, AnswerInteger, AnswerSelectMultiple
+from .models import User, Organisation, Question, Category, SurveyUser, Survey, Response, \
+    AnswerText, AnswerRadio, AnswerSelect, AnswerInteger, AnswerSelectMultiple
 
 # Register your models here.
 admin.site.register(Organisation)
 
 
-class UserResource(resources.ModelResource):
-    class Meta:
+class UserResource(resources.ModelResource):  # pylint: disable=missing-docstring
+    class Meta:  # pylint: disable=missing-docstring, too-few-public-methods
         model = User
         import_id_fields = ('username',)
         fields = ('username', 'password')
@@ -30,14 +37,14 @@ class UserResource(resources.ModelResource):
             if organisation_id > 0:
                 try:
                     instance.organisation_id = organisation_id
-                except Exception as e:
-                    logging.exception("Exception in UserResource save in try", e)
+                except Exception as e:  # pylint: disable=invalid-name
+                    logging.exception("Exception in UserResource save in try %s", e)
             super(UserResource, self).save_instance(instance, using_transactions, dry_run)
         except IntegrityError:
-            logging.exception("Exception in UserResource save", IntegrityError)
+            logging.exception("Exception in UserResource save %s", IntegrityError)
 
 
-class UserAdmin(ImportExportModelAdmin):
+class UserAdmin(ImportExportModelAdmin):  # pylint: disable=too-many-ancestors,missing-docstring
     resource_class = UserResource
 
     def get_resource_kwargs(self, request, *args, **kwargs):
@@ -45,7 +52,7 @@ class UserAdmin(ImportExportModelAdmin):
         return {'request': request}
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request)  # pylint: disable=invalid-name
         if request.user.is_superuser:
             return qs
         if request.user.groups.filter(name='SuperAdmin').exists():
@@ -57,27 +64,28 @@ class UserAdmin(ImportExportModelAdmin):
         if db_field.name == "organisation_id":
             if request.user.is_staff and not request.user.is_superuser:
                 if request.user.groups.filter(name='OrganisationAdmin').exists():
-                    kwargs["queryset"] = Organisation.objects.filter(organisation_id=request.user.organisation_id)
+                    kwargs["queryset"] = Organisation.objects.\
+                        filter(organisation_id=request.user.organisation_id)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class QuestionInline(admin.TabularInline):
+class QuestionInline(admin.TabularInline):  # pylint: disable=missing-docstring
     model = Question
     ordering = ('category',)
     extra = 0
 
 
-class CategoryInline(admin.TabularInline):
+class CategoryInline(admin.TabularInline):  # pylint: disable=missing-docstring
     model = Category
     extra = 0
 
 
-class UsersSurveysInline(admin.TabularInline):
+class UsersSurveysInline(admin.TabularInline):  # pylint: disable=missing-docstring
     model = SurveyUser
     extra = 1
 
     def get_field_queryset(self, db, db_field, request):
-        qs = super().get_field_queryset(db, db_field, request)
+        qs = super().get_field_queryset(db, db_field, request)  # pylint: disable=invalid-name
         if request.user.is_superuser:
             return qs
         if db_field.name == 'user':
@@ -85,45 +93,47 @@ class UsersSurveysInline(admin.TabularInline):
         return qs
 
     def get_queryset(self, request):
-        qs = super(UsersSurveysInline, self).get_queryset(request)
+        qs = super(UsersSurveysInline, self).get_queryset(request)  # pylint: disable=invalid-name
         if not request.user.is_superuser:
-            return qs.filter(user_id__in=User.objects.filter(organisation_id=request.user.organisation_id))
+            return qs.filter(user_id__in=User.objects.
+                             filter(organisation_id=request.user.organisation_id))
         return qs
 
 
-class SurveyAdmin(admin.ModelAdmin):
+class SurveyAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     inlines = [CategoryInline, QuestionInline, UsersSurveysInline]
 
 
-class AnswerBaseInline(admin.StackedInline):
+class AnswerBaseInline(admin.StackedInline):  # pylint: disable=missing-docstring
     fields = ('question', 'body')
     readonly_fields = ('question',)
     extra = 0
 
 
-class AnswerTextInline(AnswerBaseInline):
+class AnswerTextInline(AnswerBaseInline):  # pylint: disable=missing-docstring
     model = AnswerText
 
 
-class AnswerRadioInline(AnswerBaseInline):
+class AnswerRadioInline(AnswerBaseInline):  # pylint: disable=missing-docstring
     model = AnswerRadio
 
 
-class AnswerSelectInline(AnswerBaseInline):
+class AnswerSelectInline(AnswerBaseInline):  # pylint: disable=missing-docstring
     model = AnswerSelect
 
 
-class AnswerSelectMultipleInline(AnswerBaseInline):
+class AnswerSelectMultipleInline(AnswerBaseInline):  # pylint: disable=missing-docstring
     model = AnswerSelectMultiple
 
 
-class AnswerIntegerInline(AnswerBaseInline):
+class AnswerIntegerInline(AnswerBaseInline):  # pylint: disable=missing-docstring
     model = AnswerInteger
 
 
-class ResponseAdmin(admin.ModelAdmin):
+class ResponseAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('interview_uuid', 'user', 'created')
-    inlines = [AnswerTextInline, AnswerRadioInline, AnswerSelectInline, AnswerSelectMultipleInline, AnswerIntegerInline]
+    inlines = [AnswerTextInline, AnswerRadioInline, AnswerSelectInline,
+               AnswerSelectMultipleInline, AnswerIntegerInline]
     # specifies the order as well as which fields to act on
     readonly_fields = ('survey', 'created', 'updated', 'interview_uuid')
 
@@ -132,11 +142,11 @@ class ResponseAdmin(admin.ModelAdmin):
         if db_field.name == "user":
             if request.user.is_staff and not request.user.is_superuser:
                 if request.user.groups.filter(name='OrganisationAdmin').exists():
-                    kwargs["queryset"] = User.objects.filter(organisation_id=request.user.organisation_id)
+                    kwargs["queryset"] = User.objects.\
+                        filter(organisation_id=request.user.organisation_id)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(User, UserAdmin)
-

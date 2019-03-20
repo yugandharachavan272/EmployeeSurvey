@@ -1,3 +1,10 @@
+# pylint: disable=invalid-name
+# pylint: disable=broad-except
+# pylint: disable=missing-docstring
+# pylint: disable=no-member
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 import datetime
 from django.db import models
 from django.core.exceptions import ValidationError

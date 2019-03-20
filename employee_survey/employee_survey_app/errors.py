@@ -1,4 +1,7 @@
-
+# pylint: disable=invalid-name
+# pylint: disable=broad-except
+# pylint: disable=missing-docstring
+# pylint: disable=no-member
 __all__ = ['PasswordError', 'AttemptExhausted']
 
 
@@ -16,4 +19,3 @@ class PasswordError(Exception):
 
 class AttemptExhausted(PasswordError):
     pass
-

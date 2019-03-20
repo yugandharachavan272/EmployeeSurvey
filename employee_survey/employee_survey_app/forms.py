@@ -1,10 +1,18 @@
+# pylint: disable=invalid-name
+# pylint: disable=broad-except
+# pylint: disable=missing-docstring
+# pylint: disable=no-member
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 import uuid
 import logging
 from django import forms
 from django.forms import models
 from django.utils.safestring import mark_safe
 from django.contrib.auth import get_user_model
-from .models import Question, Response, AnswerText, AnswerRadio, AnswerSelect, AnswerInteger, AnswerSelectMultiple, \
+from .models import Question, Response, AnswerText, AnswerRadio,\
+    AnswerSelect, AnswerInteger, AnswerSelectMultiple, \
     SurveyUser, AnswerBase
 
 
@@ -62,15 +70,17 @@ class ResponseForm(models.ModelForm):
                 try:
                     response = AnswerBase.objects.get(response=user_response_id, question=q.pk)
                 except Exception as e:
-                    logging.exception("Exception in response form - AnswerBase:", e)
+                    logging.exception("Exception in response form - AnswerBase: %s", e)
             if q.question_type == Question.TEXT:
-                self.fields["question_%d" % q.pk] = forms.CharField(label=q.text,widget=forms.Textarea)
+                self.fields["question_%d" % q.pk] = \
+                    forms.CharField(label=q.text, widget=forms.Textarea)
                 try:
+                    response = AnswerBase.objects.get(response=user_response_id, question=q.pk)
                     if response:
                         initial = AnswerText.objects.get(id=response.id)
                         self.fields["question_%d" % q.pk].initial = initial.body
                 except Exception as e:
-                    logging.exception("Exception in response form - AnswerText:", e)
+                    logging.exception("Exception in response form - AnswerText: %s", e)
 
             elif q.question_type == Question.RADIO:
                 question_choices = q.get_choices()
@@ -82,7 +92,7 @@ class ResponseForm(models.ModelForm):
                         initial = AnswerRadio.objects.get(id=response.id)
                         self.fields["question_%d" % q.pk].initial = initial.body
                 except Exception as e:
-                    logging.exception("Exception in response form - AnswerRadio:", e)
+                    logging.exception("Exception in response form - AnswerRadio: %s", e)
 
             elif q.question_type == Question.SELECT:
                 question_choices = q.get_choices()
@@ -90,25 +100,27 @@ class ResponseForm(models.ModelForm):
                 # explicitly select one of the options
                 question_choices = tuple([('', '-------------')]) + question_choices
                 self.fields["question_%d" % q.pk] = forms.ChoiceField(label=q.text,
-                                                                      widget=forms.Select, choices=question_choices)
+                                                                      widget=forms.Select,
+                                                                      choices=question_choices)
                 try:
                     if response:
                         initial = AnswerSelect.objects.get(id=response.id)
                         self.fields["question_%d" % q.pk].initial = initial.body
                 except Exception as e:
-                    logging.exception("Exception in response form - AnswerSelect: ", e)
+                    logging.exception("Exception in response form - AnswerSelect: %s", e)
 
             elif q.question_type == Question.SELECT_MULTIPLE:
                 question_choices = q.get_choices()
-                self.fields["question_%d" % q.pk] = forms.MultipleChoiceField(label=q.text,
-                                                                              widget=forms.CheckboxSelectMultiple,
-                                                                              choices=question_choices)
+                self.fields["question_%d" % q.pk] = forms.\
+                    MultipleChoiceField(label=q.text,
+                                        widget=forms.CheckboxSelectMultiple,
+                                        choices=question_choices)
                 try:
                     if response:
                         initial = AnswerSelectMultiple.objects.get(id=response.id)
                         self.fields["question_%d" % q.pk].initial = initial.body
                 except Exception as e:
-                    logging.exception("Exception in response form - AnswerSelectMultiple", e)
+                    logging.exception("Exception in response form - AnswerSelectMultiple %s", e)
 
             elif q.question_type == Question.INTEGER:
                 self.fields["question_%d" % q.pk] = forms.IntegerField(label=q.text)
@@ -117,7 +129,7 @@ class ResponseForm(models.ModelForm):
                         initial = AnswerInteger.objects.get(id=response.id)
                         self.fields["question_%d" % q.pk].initial = initial.body
                 except Exception as e:
-                    logging.exception("Exception in response form - AnswerInteger", e)
+                    logging.exception("Exception in response form - AnswerInteger %s", e)
 
             # if the field is required, give it a corresponding css class.
             if q.required:
@@ -131,9 +143,11 @@ class ResponseForm(models.ModelForm):
             if q.category:
                 classes = self.fields["question_%d" % q.pk].widget.attrs.get("class")
                 if classes:
-                    self.fields["question_%d" % q.pk].widget.attrs["class"] = classes + (" cat_%s" % q.category.name)
+                    self.fields["question_%d" % q.pk].widget.attrs["class"] \
+                        = classes + (" cat_%s" % q.category.name)
                 else:
-                    self.fields["question_%d" % q.pk].widget.attrs["class"] = (" cat_%s" % q.category.name)
+                    self.fields["question_%d" % q.pk].widget.attrs["class"] \
+                        = (" cat_%s" % q.category.name)
                 self.fields["question_%d" % q.pk].widget.attrs["category"] = q.category.name
 
             # initialize the form field with values from a POST request, if any.
@@ -185,8 +199,6 @@ class ResponseForm(models.ModelForm):
                         else:
                             a.save()
                     except Exception as e:
-                        logging.exception("Exception in save response form", e)
+                        logging.exception("Exception in save response form %s", e)
                         a.save()
         return response
-
-

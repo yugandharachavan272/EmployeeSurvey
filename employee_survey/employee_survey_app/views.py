@@ -1,3 +1,10 @@
+# pylint: disable=invalid-name
+# pylint: disable=broad-except
+# pylint: disable=missing-docstring
+# pylint: disable=no-member
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 import logging
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
@@ -62,7 +69,8 @@ def register(request):
             logger.exception("Exception in user_form", user_form.errors)
     else:
         user_form = UserForm()
-    return render(request, 'employee_survey_app/registration.html', {'user_form': user_form, 'registered': registered})
+    return render(request, 'employee_survey_app/registration.html',
+                  {'user_form': user_form, 'registered': registered})
 
 
 def user_survey_assignment(request):
@@ -87,7 +95,8 @@ def user_survey_assignment(request):
             return HttpResponse("Assignment Done Successfully")
     else:
         user_survey_form = UserSurveyAssignmentForm()
-    return render(request, 'employee_survey_app/UsersSurveyAssignment.html', {'user_survey_form': user_survey_form})
+    return render(request, 'employee_survey_app/UsersSurveyAssignment.html',
+                  {'user_survey_form': user_survey_form})
 
 
 def user_login(request):
@@ -129,9 +138,8 @@ def survey_detail(request, id):
 
         if response_id:
             f = Response.objects.get(pk=response_id)
-            form = ResponseForm(request.POST, request.FILES, instance=f, survey=survey, user=user,
-                                is_finished=is_finished,
-                                user_response_id=response_id)
+            form = ResponseForm(request.POST, request.FILES, instance=f, survey=survey,
+                                user=user, is_finished=is_finished, user_response_id=response_id)
         else:
             form = ResponseForm(request.POST, survey=survey, user=user,
                                 is_finished=is_finished,
@@ -141,11 +149,13 @@ def survey_detail(request, id):
             response = form.save()
             if is_finished:
                 subject = "Complete Survey : ", survey.name
-                sms_text = "Hello ", user.username, ", \n Thank you for completing survey ", survey.name, "."
+                sms_text = "Hello ", user.username, ", \n Thank you for completing survey ",\
+                           survey.name, "."
                 email_to = [user.email]
                 EmailModel.send_mail_fun(subject, sms_text, email_to)
 
-            return HttpResponseRedirect("/employee_survey_app/confirm/%s" % response.interview_uuid)
+            return HttpResponseRedirect("/employee_survey_app/confirm/%s"
+                                        % response.interview_uuid)
     else:
         try:
             user_response = Response.objects.get(survey=survey, user=user)
@@ -155,12 +165,15 @@ def survey_detail(request, id):
             response_id = 0
             logger.exception("Exception in survey_detail - GET ", e)
 
-        form = ResponseForm(survey=survey, user=user, is_finished=False, user_response_id=response_id,
+        form = ResponseForm(survey=survey, user=user, is_finished=False,
+                            user_response_id=response_id,
                             initial={'user': user, 'comments': comments})
+
         # TODO sort by category
-    return render(request, 'employee_survey_app/survey.html', {'response_form': form, 'survey': survey,
-                                                               'categories': categories, 'user': user,
-                                                               'is_finished': False, 'user_response_id': response_id})
+    return render(request, 'employee_survey_app/survey.html',
+                  {'response_form': form, 'survey': survey,
+                   'categories': categories, 'user': user, 'is_finished': False,
+                   'user_response_id': response_id})
 
 
 def confirm(request, uuid):
