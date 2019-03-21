@@ -1,1 +1,34 @@
 __pycache__
+venv
+env
+.pytest_cache
+.coverage
+~__pycache__
+venv
+env
+.pytest_cache
+.coverage
+.idea
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+.gitignore [unix] (18:08 21/03/2019)                                    1,11 All
+".gitignore" [unix] 1L, 12C
+
