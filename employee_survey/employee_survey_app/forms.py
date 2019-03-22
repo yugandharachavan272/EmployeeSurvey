@@ -49,12 +49,14 @@ class ResponseForm(models.ModelForm):
         user = kwargs.pop('user')
         is_finished = kwargs.pop('is_finished')
         user_response_id = kwargs.pop('user_response_id')
+        survey_user_id = int(kwargs.pop('survey_user_id'))
         self.user_response_id = user_response_id
         self.is_finished = is_finished
         self.user = user
         self.survey = survey
         super(ResponseForm, self).__init__(*args, **kwargs)
         self.uuid = uuid.uuid4().hex
+        self.survey_user_id = int(survey_user_id)
 
         if user_response_id:
             survey_response = Response.objects.get(id=user_response_id)
@@ -159,6 +161,7 @@ class ResponseForm(models.ModelForm):
         response.survey = self.survey
         response.interview_uuid = self.uuid
         response.is_finished = self.is_finished
+        response.survey_user_id =  SurveyUser.objects.get(id=self.survey_user_id)
         response.save()
 
         # create an answer object for each question and associate it with this

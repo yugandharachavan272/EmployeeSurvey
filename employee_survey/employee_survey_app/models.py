@@ -135,6 +135,7 @@ class Response(models.Model):
     comments = models.TextField('Any additional Comments', blank=True, null=True)
     interview_uuid = models.CharField("Interview unique identifier", max_length=36)
     is_finished = models.BooleanField(default=False, blank=True, null=True)
+    survey_user_id = models.ForeignKey(SurveyUser, on_delete=models.CASCADE, null=True)
 
     def __unicode__(self):
         return "response %s" % self.interview_uuid

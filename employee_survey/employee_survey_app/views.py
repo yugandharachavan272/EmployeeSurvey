@@ -14,11 +14,12 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from datetime import date
 from django.contrib.auth import get_user_model
 from employee_survey_app import models
 from employee_survey_app import EmailModel
 from .forms import UserForm, UserSurveyAssignmentForm, ResponseForm
-from .models import Survey, Category, Response
+from .models import Survey, Category, Response, SurveyUser
 
 User = get_user_model()
 # Get an instance of a logger
@@ -44,15 +45,94 @@ def user_logout(request):
 def survey_report(request):
     if request.user.is_staff:
         if request.user.is_superuser:
-            response = Response.objects.all()
+            result = SurveyUser.objects.all()
+            response = list()
+            for i in result:
+                obj = dict()
+                obj['id'] = i.id
+                obj['survey'] = i.survey
+                obj['user'] = i.user
+                obj['start_date'] = i.start_date
+                obj['end_date'] = i.end_date
+                obj['is_past_end_date'] = date.today() > i.end_date
+                is_response = Response.objects.filter(survey_user_id=i.id)
+                if is_response:
+                    obj['response'] = is_response[0]
+                    response.append(obj)
+                else:
+                    response.append(obj)
         elif request.user.groups.filter(name='SuperAdmin').exists():
-            response = Response.objects.all()
+            # response = Response.objects.all()
+            result = SurveyUser.objects.all()
+            response = list()
+            for i in result:
+                obj = dict()
+                obj['id'] = i.id
+                obj['survey'] = i.survey
+                obj['user'] = i.user
+                obj['start_date'] = i.start_date
+                obj['end_date'] = i.end_date
+                obj['is_past_end_date'] = date.today() > i.end_date
+                is_response = Response.objects.filter(survey_user_id=i.id)
+                if is_response:
+                    obj['response'] = is_response[0]
+                    response.append(obj)
+                else:
+                    response.append(obj)
         elif request.user.groups.filter(name='OrganisationAdmin').exists():
-            response = Response.objects.filter(user__organisation_id=request.user.organisation_id)
+            # response = Response.objects.filter(user__organisation_id=request.user.organisation_id)
+            result = SurveyUser.objects.filter(user__organisation_id=request.user.organisation_id)
+            response = list()
+            for i in result:
+                obj = dict()
+                obj['id'] = i.id
+                obj['survey'] = i.survey
+                obj['user'] = i.user
+                obj['start_date'] = i.start_date
+                obj['end_date'] = i.end_date
+                obj['is_past_end_date'] = date.today() > i.end_date
+                is_response = Response.objects.filter(survey_user_id=i.id)
+                if is_response:
+                    obj['response'] = is_response[0]
+                    response.append(obj)
+                else:
+                    response.append(obj)
         else:
-            response = Response.objects.filter(user_id=request.user.id)
+            # response = Response.objects.filter(user_id=request.user.id)
+            result = SurveyUser.objects.filter(user_id=request.user.id)
+            response = list()
+            for i in result:
+                obj = dict()
+                obj['id'] = i.id
+                obj['survey'] = i.survey
+                obj['user'] = i.user
+                obj['start_date'] = i.start_date
+                obj['end_date'] = i.end_date
+                obj['is_past_end_date'] = date.today() > i.end_date
+                is_response = Response.objects.filter(survey_user_id=i.id)
+                if is_response:
+                    obj['response'] = is_response[0]
+                    response.append(obj)
+                else:
+                    response.append(obj)
     else:
-        response = Response.objects.filter(user_id=request.user.id)
+        # response = Response.objects.filter(user_id=request.user.id)
+        result = SurveyUser.objects.filter(user_id=request.user.id)
+        response = list()
+        for i in result:
+            obj = dict()
+            obj['id'] = i.id
+            obj['survey'] = i.survey
+            obj['user'] = i.user
+            obj['start_date'] = i.start_date
+            obj['end_date'] = i.end_date
+            obj['is_past_end_date'] = date.today() > i.end_date
+            is_response = Response.objects.filter(survey_user_id=i.id)
+            if is_response:
+                obj['response'] = is_response[0]
+                response.append(obj)
+            else:
+                response.append(obj)
     return render(request, 'employee_survey_app/survey_report.html', {'response': response})
 
 
@@ -117,7 +197,9 @@ def user_login(request):
 
 
 def survey_detail(request, id):
-    survey = Survey.objects.get(id=id)
+    survey_user_id = id
+    survey_user = SurveyUser.objects.get(id=survey_user_id)
+    survey = Survey.objects.get(id=survey_user.survey_id)
     category_items = Category.objects.filter(survey=survey)
     categories = [c.name for c in category_items]
     user = request.user
@@ -130,7 +212,7 @@ def survey_detail(request, id):
             is_finished = True
 
         try:
-            user_response = Response.objects.get(survey=survey, user=user)
+            user_response = Response.objects.get(survey=survey, user=user, survey_user_id=survey_user_id)
             response_id = user_response.id
         except Exception as e:
             response_id = 0
@@ -139,11 +221,12 @@ def survey_detail(request, id):
         if response_id:
             f = Response.objects.get(pk=response_id)
             form = ResponseForm(request.POST, request.FILES, instance=f, survey=survey,
-                                user=user, is_finished=is_finished, user_response_id=response_id)
+                                user=user, is_finished=is_finished, user_response_id=response_id,
+                                survey_user_id=survey_user_id)
         else:
             form = ResponseForm(request.POST, survey=survey, user=user,
                                 is_finished=is_finished,
-                                user_response_id=response_id)
+                                user_response_id=response_id, survey_user_id=survey_user_id)
 
         if form.is_valid():
             response = form.save()
@@ -158,7 +241,7 @@ def survey_detail(request, id):
                                         % response.interview_uuid)
     else:
         try:
-            user_response = Response.objects.get(survey=survey, user=user)
+            user_response = Response.objects.get(survey=survey, user=user, survey_user_id=survey_user_id)
             response_id = user_response.id
             comments = user_response.comments
         except Exception as e:
@@ -166,14 +249,14 @@ def survey_detail(request, id):
             logger.exception("Exception in survey_detail - GET ", e)
 
         form = ResponseForm(survey=survey, user=user, is_finished=False,
-                            user_response_id=response_id,
+                            user_response_id=response_id, survey_user_id=survey_user_id,
                             initial={'user': user, 'comments': comments})
 
         # TODO sort by category
     return render(request, 'employee_survey_app/survey.html',
                   {'response_form': form, 'survey': survey,
                    'categories': categories, 'user': user, 'is_finished': False,
-                   'user_response_id': response_id})
+                   'user_response_id': response_id, 'survey_user_id': survey_user_id})
 
 
 def confirm(request, uuid):

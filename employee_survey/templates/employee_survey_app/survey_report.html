@@ -26,8 +26,8 @@
     <table>
         <tr>
             <th>Id</th>
-            <th>Created Date</th>
-            <th>Last Updated Date</th>
+            <th>Start Date</th>
+            <th>End Date</th>
             <th>Survey Name</th>
             <th>User Name</th>
             <th>Comments from User</th>
@@ -36,17 +36,23 @@
         {% for item in response %}
         <tr>
              <td>{{ item.id }}</td>
-             <td>{{ item.created }}</td>
-             <td>{{ item.updated }}</td>
+             <td>{{ item.start_date }}</td>
+             <td>{{ item.end_date }}</td>
              <td>{{ item.survey.name }}</td>
              <td>{{ item.user.username }}</td>
-             <td>{{ item.comments }}</td>
+             <td>{{ item.response.comments }}</td>
              <td>
-            {% if item.is_finished %}
-                 <label style="color:green">Complete</label>
-            {% else %}
-                 <label style="color:red">In-Complete</label>
-            {% endif %}
+                 {% if item.response %}
+                     {% if item.response.is_finished %}
+                         <label style="color:green">Complete</label>
+                     {% else %}
+                        <label style="color:red">In-Complete</label>
+                     {% endif %}
+                 {% elif item.is_past_end_date%}
+                    <label style="color:red">Expired</label>
+                 {% else %}
+                    <label style="color:black">Assigned</label>
+                 {% endif %}
             </td>
         </tr>
         {% endfor %}

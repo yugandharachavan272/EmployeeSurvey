@@ -16,7 +16,7 @@
 	<div class="card">
 		<div class="card-header"></div>
 		<div class="card-body">
-			<form action="/employee_survey_app/my_surveys/{{survey.id}}/" method="POST">{% csrf_token %}
+			<form action="/employee_survey_app/my_surveys/{{survey_user_id}}/" method="POST">{% csrf_token %}
 				<div class="category-container">
 					<div  style="visibility:hidden">
 							{{ response_form.user }}
