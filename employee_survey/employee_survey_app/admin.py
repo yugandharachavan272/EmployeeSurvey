@@ -89,37 +89,22 @@ class SurveyQuestionsInline(admin.TabularInline):
     extra = 1
 
 
-class UsersSurveysInline(admin.TabularInline):  # pylint: disable=missing-docstring
-    # model = SurveyUser
+class UsersSurveysInline(admin.TabularInline):
     model = Survey.user.through
-    # verbose_name = "User",
-    # verbose_name_plural = "Users",
-    # raw_id_fields = ('user',)
     extra = 1
-    # filter_horizontal = ('user',)
 
-    def get_field_queryset(self, db, db_field, request):
-        qs = super().get_field_queryset(db, db_field, request)
-        if qs:
-            if request.user.is_superuser:
-                return qs
-            if db_field.name == 'user':
-                return qs.filter(organisation=request.user.organisation_id)
-        return qs
-
-    def get_queryset(self, request):
-        qs = super(UsersSurveysInline, self).get_queryset(request)
-        if not request.user.is_superuser:
-            print(" qs ", qs)
-            return qs.filter(user_id__in=User.objects.
-                             filter(organisation_id=request.user.organisation_id))
-        return qs
+    # FILTER USER AND SHOW EMPLOYEES OF HIS ORGANISATION
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            if request.user.is_staff and not request.user.is_superuser:
+                if request.user.groups.filter(name='OrganisationAdmin').exists():
+                    kwargs["queryset"] = User.objects.filter(organisation_id=request.user.organisation_id)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class SurveyAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     filter_horizontal = ("questions",)
     inlines = (UsersSurveysInline, )
-    # exclude = ("questions",)
 
 
 class AnswerBaseInline(admin.StackedInline):  # pylint: disable=missing-docstring
