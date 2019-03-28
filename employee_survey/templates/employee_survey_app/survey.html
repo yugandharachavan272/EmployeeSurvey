@@ -3,66 +3,95 @@
 
 {% block body_block %}
 <div class="container">
-	{% if user_response_id %}
-		<h2 style="color:#000080">welcome {{user}}, now re-start your feedback ... </h2>
+	{% if is_past_end_date %}
+		<h2 style="color:red">welcome {{user}}, your survey is expired..!! </h2>
+        <label><span class="asterix"> * </span>You can only see your previous feedback</label>
 	{% else %}
-		<h2 style="color:#000080">welcome {{user}}, now start your feedback ...</h2>
+		{% if user_response_id %}
+			<h2 style="color:#000080">welcome {{user}}, now re-start your feedback ...</h2>
+		{% else %}
+			<h2 style="color:#000080">welcome {{user}}, now start your feedback ...</h2>
+		{% endif %}
 	{% endif %}
 	<h4>About {{survey.name|title}} </h4>
 	<div class="survey-description">
 		{{survey.description|safe}}
 	</div>
 
-	<div class="card">
+	<div class="card" style="disabled:{{is_past_end_date}}">
 		<div class="card-header"></div>
 		<div class="card-body">
-			<form action="/employee_survey_app/my_surveys/{{survey_user_id}}/" method="POST">{% csrf_token %}
+			<form name="frm-survey" id="frm-example"  action="/employee_survey_app/my_surveys/{{survey_user_id}}/" method="POST">{% csrf_token %}
 				<div class="category-container">
 					<div  style="visibility:hidden">
 							{{ response_form.user }}
 					</div>
-					<div class="field-wrapper">
-						{{ response_form.comments.errors }}
-						{{ response_form.comments.label_tag }}
-						<span class="form-help-text">{{ response_form.comments.help_text}}</span>
-						<div class="form-field-body">
-							{{ response_form.comments }}
-						</div>
+					<table>
+						<tr class="field-wrapper">
+							<td>
+								{{ response_form.comments.label_tag }}
+							</td>
+							<td>
+								{{ response_form.comments.errors }}
+								{{ response_form.comments.help_text}}
+								{{ response_form.comments }}
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="panel panel-default survey_panel">
+					<div class="panel-body">
+						<table id="example" class="table" style="width:100%"  data-page-length='5'>
+						<thead>
+							<tr>
+								<th>Sr. No.</th>
+								<th>Question</th>
+								<th>Answer</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for field in response_form %}
+								{% if field.field.widget.attrs.category == 'test_cat' %}
+									<tr class="q-item" value="{% counter %}">
+										<td>{% counter %}</td>
+										{% if field.field.required %}
+											<td>
+												{{ field.errors }}
+												<span class="asterix"> * </span><label class="label-inline">{{ field.label }}</label>
+												<span class="form-help-text">{{ field.help_text}}</span>
+											</td>
+										{% else %}
+											<td>
+												{{ field.errors }}
+												<label class="label-inline">{{ field.label }}</label>
+												<span class="form-help-text">{{ field.help_text}}</span>
+											</td>
+										{% endif %}
+										<td>
+											{{ field }}
+										</td>
+									</tr>
+								{% endif %}
+							{% endfor %}
+						</tbody>
+						<tfoot>
+						</tfoot>
+					</table>
 					</div>
 				</div>
-
-				<ol class="survey-questions">
-				{% for category in categories %}
-					<h3 class="collapsible">{{category|title}} Questions<span></span></h3>
-					<div class="category-container">
-					{% for field in response_form %}
-						{% if field.field.widget.attrs.category == category %}
-							<li class="q-item" value="{% counter %}">
-								{% if field.field.required %}
-								<div class="field-wrapper question-required">
-									{{ field.errors }}
-									<span class="asterix"> * </span><label class="label-inline">{{ field.label }}</label>
-								</div>
-								{% else %}
-								<div class="field-wrapper">
-									{{ field.errors }}
-									<label class="label-inline">{{ field.label }}</label>
-								{% endif %}
-									<span class="form-help-text">{{ field.help_text}}</span>
-									<div class="form-field-body">
-										{{ field }}
-									</div>
-								</div>
-							</li>
-						{% endif %}
-					{% endfor %}
-					</div>
-				{% endfor %}
-				</ol>
-
 				<div class="submit-button">
-					<input type="submit" class="btn btn-success btn-md" name="save_btn" value="Save">
-					<input type="submit" class="btn btn-success btn-md" name="finish_btn" value="Finish">
+					{% if is_past_end_date %}
+						<input type="submit" class="btn btn-primary btn-md" name="save_btn"
+							   value="Save" disabled>
+						<input type="submit" class="btn btn-success btn-md" name="finish_btn"
+							   value="Finish" disabled>
+					{% else %}
+						<input type="submit" class="btn btn-primary btn-md" name="save_btn"
+							   value="Save">
+						<input type="submit" class="btn btn-success btn-md" name="finish_btn"
+							   value="Finish">
+					{% endif %}
+
 				</div>
 			</form>
 		</div>

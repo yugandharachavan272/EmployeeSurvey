@@ -23,39 +23,54 @@
   <div class="jumbotron">
     <h2>REPORTS !</h2>
       {% if response %}
+      <div class="form-group">
+        <label class="control-label col-sm-3">Filter by Status</label>
+         <select class="form-control col-md-3" id="survey_status">
+             <option>Select Status</option>
+             <option>All</option>
+             <option>Complete</option>
+             <option>In-Complete</option>
+             <option>Expired</option>
+             <option>Not Attempted</option>
+        </select>
+    </div>
     <table>
-        <tr>
-            <th>Id</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Survey Name</th>
-            <th>User Name</th>
-            <th>Comments from User</th>
-            <th>Status</th>
-        </tr>
-        {% for item in response %}
-        <tr>
-             <td>{{ item.id }}</td>
-             <td>{{ item.start_date }}</td>
-             <td>{{ item.end_date }}</td>
-             <td>{{ item.survey.name }}</td>
-             <td>{{ item.user.username }}</td>
-             <td>{{ item.response.comments }}</td>
-             <td>
-                 {% if item.response %}
-                     {% if item.response.is_finished %}
-                         <label style="color:green">Complete</label>
-                     {% else %}
-                        <label style="color:red">In-Complete</label>
-                     {% endif %}
-                 {% elif item.is_past_end_date%}
-                    <label style="color:red">Expired</label>
-                 {% else %}
-                    <label style="color:black">Assigned</label>
-                 {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
+        <thead>
+            <tr>
+                <!--<th>Id</th>-->
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Survey Name</th>
+                <th>User Name</th>
+                <th>Comments from User</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody class="data-row">
+             {% for item in response %}
+                <tr>
+                     <!--<td>{{ item.id }}</td>-->
+                     <td>{{ item.start_date }}</td>
+                     <td>{{ item.end_date }}</td>
+                     <td>{{ item.survey.name }}</td>
+                     <td>{{ item.user.username }}</td>
+                     <td>{{ item.response.comments }}</td>
+                     <td class="status_cell">
+                         {% if item.response %}
+                             {% if item.response.is_finished %}
+                                 <label style="color:green">Complete</label>
+                             {% else %}
+                                <label style="color:red">In-Complete</label>
+                             {% endif %}
+                         {% elif item.is_past_end_date%}
+                            <label style="color:red">Expired</label>
+                         {% else %}
+                            <label style="color:black">Not Attempted</label>
+                         {% endif %}
+                    </td>
+                </tr>
+             {% endfor %}
+        </tbody>
     </table>
       {% else %}
           <p style="color:#ff0000">There are no response.</p>

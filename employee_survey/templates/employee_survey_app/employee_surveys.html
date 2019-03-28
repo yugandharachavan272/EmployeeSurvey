@@ -1,16 +1,58 @@
 {% extends "employee_survey_app/base.html" %}
 {% block body_block %}
+<style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        th{
+            color: black;
+        }
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+    </style>
 <h2 style="color:#000080">Welcome to Employee Survey System!</h2>
 {% if UsersSurveys %}
-    <ol>
-      {% for survey in UsersSurveys %}
-      <h4>
-          <li>
-            <a href="{{survey.id}}">{{survey.survey.name}}</a>
-          </li>
-      </h4>
-      {% endfor %}
-    </ol>
+    <table>
+        <tr>
+            <th>Survey Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Action</th>
+        </tr>
+         {% for survey in UsersSurveys %}
+            <tr>
+                 <td>{{survey.survey.name}}</td>
+                 <td>{{survey.start_date}}</td>
+                 <td>{{survey.end_date}}</td>
+                 <td>
+                     {% if survey.is_past_start_date%}
+                        {% if survey.is_past_end_date %}
+                            <a href="{{survey.id}}" style="color:red;text-decoration:underline;">Expired..!</a>
+                        {% elif survey.response %}
+                            {% if survey.response.is_finished %}
+                                <a href="{{survey.id}}" style="text-decoration:underline;"> Re-start </a>
+                            {% else %}
+                                <a href="{{survey.id}}" style="text-decoration:underline;">Continue </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{survey.id}}" style="text-decoration:underline;">Start</a>
+                        {% endif %}
+                     {% else %}
+                        <label style="color:green;"> Coming soon</label>
+                     {% endif %}
+                 </td>
+            </tr>
+         {% endfor %}
+    </table>
 {% else %}
       <p style="color:#ff0000">There are no surveys.</p>
 {% endif %}

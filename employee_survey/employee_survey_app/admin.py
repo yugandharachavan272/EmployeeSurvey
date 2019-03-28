@@ -69,39 +69,57 @@ class UserAdmin(ImportExportModelAdmin):  # pylint: disable=too-many-ancestors,m
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class QuestionInline(admin.TabularInline):  # pylint: disable=missing-docstring
-    model = Question
-    ordering = ('category',)
-    extra = 0
+# class QuestionInline(admin.TabularInline):  # pylint: disable=missing-docstring
+#     model = Question
+#     ordering = ('category',)
+#     extra = 0
+#
+#
+# class CategoryInline(admin.TabularInline):  # pylint: disable=missing-docstring
+#     model = Category
+#     extra = 0
 
-
-class CategoryInline(admin.TabularInline):  # pylint: disable=missing-docstring
-    model = Category
-    extra = 0
+class SurveyQuestionsInline(admin.TabularInline):
+    #     # model = SurveyQuestions
+    #     # extra = 1
+    model = Survey.questions.through
+    verbose_name = u"Question"
+    verbose_name_plural = u"Questions",
+    # raw_id_fields = ("question",)
+    extra = 1
 
 
 class UsersSurveysInline(admin.TabularInline):  # pylint: disable=missing-docstring
-    model = SurveyUser
+    # model = SurveyUser
+    model = Survey.user.through
+    # verbose_name = "User",
+    # verbose_name_plural = "Users",
+    # raw_id_fields = ('user',)
     extra = 1
+    # filter_horizontal = ('user',)
 
     def get_field_queryset(self, db, db_field, request):
-        qs = super().get_field_queryset(db, db_field, request)  # pylint: disable=invalid-name
-        if request.user.is_superuser:
-            return qs
-        if db_field.name == 'user':
-            return qs.filter(organisation=request.user.organisation_id)
+        qs = super().get_field_queryset(db, db_field, request)
+        if qs:
+            if request.user.is_superuser:
+                return qs
+            if db_field.name == 'user':
+                return qs.filter(organisation=request.user.organisation_id)
         return qs
 
     def get_queryset(self, request):
-        qs = super(UsersSurveysInline, self).get_queryset(request)  # pylint: disable=invalid-name
+        qs = super(UsersSurveysInline, self).get_queryset(request)
         if not request.user.is_superuser:
+            print(" qs ", qs)
             return qs.filter(user_id__in=User.objects.
                              filter(organisation_id=request.user.organisation_id))
         return qs
 
 
 class SurveyAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
-    inlines = [CategoryInline, QuestionInline, UsersSurveysInline]
+    filter_horizontal = ("questions",)
+    inlines = (UsersSurveysInline, )
+    # exclude = ("questions",)
 
 
 class AnswerBaseInline(admin.StackedInline):  # pylint: disable=missing-docstring
@@ -148,5 +166,6 @@ class ResponseAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
 
 
 admin.site.register(Survey, SurveyAdmin)
+admin.site.register(Question)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(User, UserAdmin)

@@ -7,9 +7,10 @@
 # pylint: disable=too-many-statements
 from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
+import datetime
 from django.contrib.auth.models import Permission, Group
 from .forms import UserForm, ResponseForm
-from .models import User, Organisation, Category, Survey, Question
+from .models import User, Organisation, Category, Survey, Question, SurveyUser
 
 
 # Create your tests here.
@@ -24,15 +25,15 @@ class UserFormTest(TestCase):
 
     # Valid Form Data
     def test_UserForm_valid(self):
-        form = UserForm(data={'username': "user", 'password': "user", 'email': "user@mp.com"})
+        form = UserForm(data={'username': "user", 'password': "user", 'email': "user@mp.com"}, logged_in_user=None)
         self.assertTrue(form.is_valid())
 
 
 # Model Test Cases
 class OrganizationTest(TestCase):
     @staticmethod
-    def create_organization(name="company for test"):
-        return Organisation.objects.create(name=name)
+    def create_organization(name="company for test", is_archived=False):
+        return Organisation.objects.create(name=name, is_archived=is_archived)
 
     def test_org_creation(self):
         w = self.create_organization()
@@ -40,31 +41,13 @@ class OrganizationTest(TestCase):
         self.assertEqual(w.__str__(), w.name)
 
 
-class CategoryTest(TestCase):
-    def setUp(self):
-        self.survey = Survey.objects.create(name='test survey')
-
-    @staticmethod
-    def create_Category(name="company for test"):
-        return Category.objects.create(name=name, survey_id=1)
-
-    def test_org_creation(self):
-        w = self.create_Category()
-        self.assertTrue(isinstance(w, Category))
-        self.assertEqual(w.__str__(), w.name)
-
-
 class QuestionTest(TransactionTestCase):
     def setUp(self):
-        s = Survey.objects.create(name='test survey')
-        if isinstance(s, Survey):
-            w = Category.objects.create(name='', survey_id=s.id)
-            self.survey = s
-            self.category = w
+        pass
 
     def test_question_creation(self):
-        w = Question.objects.create(text='test question', required=False, category=self.category,
-                                    survey=self.survey, question_type=1, choices='')
+        w = Question.objects.create(text='test question', required=False,
+                                    question_type=1, choices='')
         self.assertTrue(isinstance(w, Question))
         self.assertEqual(w.__str__(), w.text)
 
@@ -155,17 +138,19 @@ class EmployeeSurveyDetail(TestCase):
         test_user.save()
         s = Survey.objects.create(name='test survey')
         if isinstance(s, Survey):
-            c = Category.objects.create(name='', survey_id=s.id)
             self.survey = s
-            if isinstance(c, Category):
-                self.category = c
-                q = Question.objects.create(text='test question??', required=True, category=self.category,
-                                            survey=self.survey, question_type='text', choices='')
+            survey_user = SurveyUser.objects.create(survey=s, user=test_user,
+                                                    start_date=datetime.date.today(), end_date=datetime.date.today())
+            if isinstance(survey_user, SurveyUser):
+                self.survey_user = survey_user.id
+                print(" survey_user ", survey_user)
+                q = Question.objects.create(text='test question??', required=True,
+                                            question_type='text', choices='')
                 self.question = q
 
     # Valid Form Data
     def test_ResponseForm(self):
         login = self.client.login(username='test_user', password='1X<ISRUkw+tuK')
         response = self.client.get(reverse('employee_survey_app:my_surveys_detail',
-                                           kwargs={'id': self.survey.id}))
+                                           kwargs={'id': self.survey_user}))
         self.assertEqual(response.status_code, 200)

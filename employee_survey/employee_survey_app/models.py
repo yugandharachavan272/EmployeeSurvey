@@ -14,6 +14,7 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class Organisation(models.Model):
     name = models.CharField(max_length=256)
+    is_archived = models.BooleanField(null=True)
 
     def __str__(self):
         return self.name
@@ -24,55 +25,15 @@ class User(AbstractUser):
                                      related_name='organisations')
 
 
-class Survey(models.Model):
-    name = models.CharField(max_length=400)
-    description = models.TextField()
-    user = models.ManyToManyField(User, through='SurveyUser')
-
-    def __unicode__(self):
-            return self.name
-
-    def __str__(self):
-        return self.name
-
-    def questions(self):
-            if self.pk:
-                return Question.objects.filter(survey=self.pk)
-            else:
-                return None
-
-
-class SurveyUser(models.Model):
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    start_date = models.DateField(default=datetime.date.today)
-    end_date = models.DateField()
-
-    def __str__(self):
-        return self.survey.name
-
-
 class Category(models.Model):
     name = models.CharField(max_length=400)
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    # survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
 
     def __unicode__(self):
         return self.name
 
     def __str__(self):
         return self.name
-
-
-'''
-takes a text value and verifies that there is at least one comma 
-'''
-
-
-def validate_list(value):
-    values = value.split(',')
-    if len(values) < 2:
-        raise ValidationError("The selected field requires "
-                              "an associated list of choices. Choices must contain more than one item.")
 
 
 class Question(models.Model):
@@ -92,8 +53,8 @@ class Question(models.Model):
 
     text = models.TextField()
     required = models.BooleanField()
-    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE)
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    # category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE)
+    # survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     question_type = models.CharField(max_length=200, choices=QUESTION_TYPES, default=TEXT)
     # the choices field is only used if the question type
     choices = models.TextField(blank=True, null=True, help_text='if the question type is "radio," "select,'
@@ -123,6 +84,52 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class Survey(models.Model):
+    name = models.CharField(max_length=400)
+    description = models.TextField()
+    user = models.ManyToManyField(User, through='SurveyUser')
+    questions = models.ManyToManyField(Question)
+
+    def __unicode__(self):
+            return self.name
+
+    def __str__(self):
+        return self.name
+
+    # def questions(self):
+    #         if self.pk:
+    #             return Question.objects.filter(survey=self.pk)
+    #         else:
+    #             return None
+
+
+# class SurveyQuestions(models.Model):
+#     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+#     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+
+class SurveyUser(models.Model):
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    start_date = models.DateField(default=datetime.date.today)
+    end_date = models.DateField()
+
+    def __str__(self):
+        return self.survey.name
+
+
+'''
+takes a text value and verifies that there is at least one comma 
+'''
+
+
+def validate_list(value):
+    values = value.split(',')
+    if len(values) < 2:
+        raise ValidationError("The selected field requires "
+                              "an associated list of choices. Choices must contain more than one item.")
 
 
 class Response(models.Model):

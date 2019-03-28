@@ -154,8 +154,8 @@ div.ui-datepicker{
 }
 
 textarea {
-	width: 475px;
-	height: 120px;
+	width: 350px;
+	height: 50px;
 }
 
 .float-right {
@@ -189,7 +189,7 @@ img.profile-page-img {
 	padding-bottom: 1px;
 	padding-top: 1px;
 	padding-left: 20px;
-
+    background: aliceblue;
 }
 
 .question-required {
@@ -221,7 +221,7 @@ h3.collapsible:hover {
 }
 
 .submit-button {
-	padding: 40px;
+	text-align: -webkit-right;
 }
 
 .submit-button > input {
@@ -271,4 +271,12 @@ ol.survey-questions {
     border-color:#d2d2d2;
     border-width: 5px;
     box-shadow:0 1px 0 #cfcfcf;
+}
+
+.survey_panel{
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.panel-body {
+    padding: 30px;
 }

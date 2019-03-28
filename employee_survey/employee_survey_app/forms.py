@@ -13,7 +13,7 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth import get_user_model
 from .models import Question, Response, AnswerText, AnswerRadio,\
     AnswerSelect, AnswerInteger, AnswerSelectMultiple, \
-    SurveyUser, AnswerBase
+    SurveyUser, AnswerBase, Organisation  #, SurveyQuestions
 
 
 User = get_user_model()
@@ -25,6 +25,21 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('username', 'password', 'email', 'organisation')
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('logged_in_user')
+        super(UserForm, self).__init__(*args, **kwargs)
+        if user:
+            if user.is_staff and not user.is_superuser:
+                if user.groups.filter(name='OrganisationAdmin').exists():
+                    self.fields['organisation'].queryset = Organisation.objects\
+                        .filter(id=user.organisation_id, is_archived=False)
+            else:
+                self.fields['organisation'].queryset = Organisation.objects \
+                    .filter(is_archived=False)
+        else:
+            self.fields['organisation'].queryset = Organisation.objects \
+                .filter(is_archived=False)
 
 
 class UserSurveyAssignmentForm(forms.ModelForm):
@@ -50,6 +65,8 @@ class ResponseForm(models.ModelForm):
         is_finished = kwargs.pop('is_finished')
         user_response_id = kwargs.pop('user_response_id')
         survey_user_id = int(kwargs.pop('survey_user_id'))
+        is_past_end_date = bool(kwargs.pop('is_past_end_date'))
+        self.is_past_end_date = is_past_end_date
         self.user_response_id = user_response_id
         self.is_finished = is_finished
         self.user = user
@@ -57,7 +74,6 @@ class ResponseForm(models.ModelForm):
         super(ResponseForm, self).__init__(*args, **kwargs)
         self.uuid = uuid.uuid4().hex
         self.survey_user_id = int(survey_user_id)
-
         if user_response_id:
             survey_response = Response.objects.get(id=user_response_id)
             self.uuid = survey_response.interview_uuid
@@ -66,8 +82,9 @@ class ResponseForm(models.ModelForm):
 
         # add a field for each survey question, corresponding to the question
         # type as appropriate.
-
-        for q in survey.questions():
+        sq = survey.questions.through.objects.filter(survey=survey)
+        for survey_question in survey.questions.through.objects.filter(survey=survey):
+            q = survey_question.question
             if user_response_id:
                 try:
                     response = AnswerBase.objects.get(response=user_response_id, question=q.pk)
@@ -142,15 +159,24 @@ class ResponseForm(models.ModelForm):
 
             # add the category as a css class, and add it as a data attribute
             # as well (this is used in the template to allow sorting the questions by category)
-            if q.category:
-                classes = self.fields["question_%d" % q.pk].widget.attrs.get("class")
-                if classes:
-                    self.fields["question_%d" % q.pk].widget.attrs["class"] \
-                        = classes + (" cat_%s" % q.category.name)
-                else:
-                    self.fields["question_%d" % q.pk].widget.attrs["class"] \
-                        = (" cat_%s" % q.category.name)
-                self.fields["question_%d" % q.pk].widget.attrs["category"] = q.category.name
+            # if q.category:
+            #     classes = self.fields["question_%d" % q.pk].widget.attrs.get("class")
+            #     if classes:
+            #         self.fields["question_%d" % q.pk].widget.attrs["class"] \
+            #             = classes + (" cat_%s" % q.category.name)
+            #     else:
+            #         self.fields["question_%d" % q.pk].widget.attrs["class"] \
+            #             = (" cat_%s" % q.category.name)
+            #     self.fields["question_%d" % q.pk].widget.attrs["category"] = q.category.name
+
+            classes = self.fields["question_%d" % q.pk].widget.attrs.get("class")
+            if classes:
+                self.fields["question_%d" % q.pk].widget.attrs["class"] \
+                    = classes + (" cat_%s" % 'test_cat')
+            else:
+                self.fields["question_%d" % q.pk].widget.attrs["class"] \
+                    = (" cat_%s" % 'test_cat')
+            self.fields["question_%d" % q.pk].widget.attrs["category"] = 'test_cat'
 
             # initialize the form field with values from a POST request, if any.
 
@@ -161,7 +187,7 @@ class ResponseForm(models.ModelForm):
         response.survey = self.survey
         response.interview_uuid = self.uuid
         response.is_finished = self.is_finished
-        response.survey_user_id =  SurveyUser.objects.get(id=self.survey_user_id)
+        response.survey_user_id = SurveyUser.objects.get(id=self.survey_user_id)
         response.save()
 
         # create an answer object for each question and associate it with this

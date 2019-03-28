@@ -19,7 +19,7 @@ from django.contrib.auth import get_user_model
 from employee_survey_app import models
 from employee_survey_app import EmailModel
 from .forms import UserForm, UserSurveyAssignmentForm, ResponseForm
-from .models import Survey, Category, Response, SurveyUser
+from .models import Survey, Category, Response, SurveyUser, Organisation
 
 User = get_user_model()
 # Get an instance of a logger
@@ -138,8 +138,9 @@ def survey_report(request):
 
 def register(request):
     registered = False
+    user = request.user
     if request.method == 'POST':
-        user_form = UserForm(data=request.POST)
+        user_form = UserForm(logged_in_user=user, data=request.POST)
         if user_form.is_valid():
             user = user_form.save()
             user.set_password(user.password)
@@ -148,9 +149,13 @@ def register(request):
         else:
             logger.exception("Exception in user_form", user_form.errors)
     else:
-        user_form = UserForm()
+        user_form = UserForm(logged_in_user=user)
+        if request.user.is_staff and not request.user.is_superuser:
+            if request.user.groups.filter(name='OrganisationAdmin').exists():
+                user_form = UserForm(logged_in_user=user, initial={'organisation': request.user.organisation_id})
+
     return render(request, 'employee_survey_app/registration.html',
-                  {'user_form': user_form, 'registered': registered})
+                  {'user_form': user_form, 'logged_in_user': user, 'registered': registered})
 
 
 def user_survey_assignment(request):
@@ -199,9 +204,10 @@ def user_login(request):
 def survey_detail(request, id):
     survey_user_id = id
     survey_user = SurveyUser.objects.get(id=survey_user_id)
+    is_past_end_date = date.today() >= survey_user.end_date
     survey = Survey.objects.get(id=survey_user.survey_id)
-    category_items = Category.objects.filter(survey=survey)
-    categories = [c.name for c in category_items]
+    # category_items = Category.objects.filter(survey=survey)
+    # categories = [c.name for c in category_items]
     user = request.user
     is_finished = False
     comments = ""
@@ -222,10 +228,10 @@ def survey_detail(request, id):
             f = Response.objects.get(pk=response_id)
             form = ResponseForm(request.POST, request.FILES, instance=f, survey=survey,
                                 user=user, is_finished=is_finished, user_response_id=response_id,
-                                survey_user_id=survey_user_id)
+                                is_past_end_date=is_past_end_date, survey_user_id=survey_user_id)
         else:
             form = ResponseForm(request.POST, survey=survey, user=user,
-                                is_finished=is_finished,
+                                is_finished=is_finished, is_past_end_date=is_past_end_date,
                                 user_response_id=response_id, survey_user_id=survey_user_id)
 
         if form.is_valid():
@@ -250,13 +256,15 @@ def survey_detail(request, id):
 
         form = ResponseForm(survey=survey, user=user, is_finished=False,
                             user_response_id=response_id, survey_user_id=survey_user_id,
+                            is_past_end_date=is_past_end_date,
                             initial={'user': user, 'comments': comments})
 
         # TODO sort by category
     return render(request, 'employee_survey_app/survey.html',
                   {'response_form': form, 'survey': survey,
-                   'categories': categories, 'user': user, 'is_finished': False,
-                   'user_response_id': response_id, 'survey_user_id': survey_user_id})
+                   'user': user, 'is_finished': False,
+                   'user_response_id': response_id, 'survey_user_id': survey_user_id,
+                   'is_past_end_date': is_past_end_date})
 
 
 def confirm(request, uuid):
@@ -270,4 +278,23 @@ class EmployeeSurveys(LoginRequiredMixin, ListView):
     # paginate_by = 5
 
     def get_queryset(self):
-        return models.SurveyUser.objects.filter(user=self.request.user)
+
+        result = SurveyUser.objects.filter(user_id=self.request.user.id)
+        response = list()
+        for i in result:
+            obj = dict()
+            obj['id'] = i.id
+            obj['survey'] = i.survey
+            obj['user'] = i.user
+            obj['start_date'] = i.start_date
+            obj['end_date'] = i.end_date
+            obj['is_past_end_date'] = date.today() > i.end_date
+            obj['is_past_start_date'] = date.today() >= i.start_date
+            is_response = Response.objects.filter(survey_user_id=i.id)
+            if is_response:
+                obj['response'] = is_response[0]
+                response.append(obj)
+            else:
+                response.append(obj)
+
+        return response  # models.SurveyUser.objects.filter(user=self.request.user)
